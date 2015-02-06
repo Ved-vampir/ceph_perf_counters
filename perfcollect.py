@@ -1,23 +1,14 @@
 #!/usr/local/bin/python
-#import logging
+
+from __future__ import with_statement
 import json
 from fabric import tasks
-from fabric.api import env, run
-#from fabric.api import env
+from fabric.api import env, run, hide, settings
 from fabric.network import disconnect_all
 
 
 env.user = 'root'
 cnt_host = '172.16.54.71' #controller host
-#osd_list = []
-#env.hosts = [
-#    '172.16.54.71',
-#     ]
-#env.gateway = '172.16.54.71' #controller host
-
-
-#logger = logging.getLogger('fabric')
-#logger.setLevel(logging.WARN)
 
 def osds_list_task():
   #gets list og osds id
@@ -40,23 +31,34 @@ def get_perf_dump_task():
   return perf_list
 
 def get_perf_dump_in_map():
+#this function do all work
+  with hide('output','running','warnings'), settings(warn_only=True): #for disable fabric output
+    print ("Collecting.....") #this is not very fast
+
   #go to ceph on controller for osd's ips
-  env.hosts = [cnt_host]
-  osd_list = tasks.execute(osds_list_task)[env.hosts[0]]
-  ip_list = tasks.execute(osds_ips_task)[env.hosts[0]]
+    env.hosts = [cnt_host]
+    osd_list = tasks.execute(osds_list_task)[env.hosts[0]]
+    ip_list = tasks.execute(osds_ips_task)[env.hosts[0]]
 
-  #set hosts for osds and gateway (ips are local)
-  env.hosts = ip_list
-  env.gateway = cnt_host
+    #set hosts for osds and gateway (ips are local)
+    env.hosts = ip_list
+    env.gateway = cnt_host
 
-  perf_list = tasks.execute(get_perf_dump_task)
+    perf_list = tasks.execute(get_perf_dump_task)
 
-  disconnect_all()
+    disconnect_all()
 
-  return perf_list
+    k = 0
+    perf_list_named = {} #change names in map for to find them by osds
+    for key, pd in perf_list.items():
+      perf_list_named["osd"+osd_list[k]] = pd
+      k+=1
 
-def main():
+    return perf_list_named
+
+def main(): #just for test
   perf_list = get_perf_dump_in_map ()
+
   print perf_list
 
 
