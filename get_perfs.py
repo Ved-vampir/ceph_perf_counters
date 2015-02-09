@@ -82,7 +82,7 @@ def main():
             row = []
             row.append(counter)
             for key, value in perf_list.items():
-                if (isinstance(value[group_name][counter], dict)):
+                if type(value[group_name][counter]) != type(dict()):
                     row.append(value[group_name][counter])
                 else:
                     s = ""
