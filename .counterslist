@@ -1,6 +1,8 @@
-{ "WBThrottle": { "bytes_dirtied",
-      "ios_dirtied",
-      "inodes_dirtied"},
-  "filestore": { "journal_queue_max_ops",
-      "journal_queue_max_bytes",
-      "queue_transaction_latency_avg"}}
+{"WBThrottle":
+    ["bytes_dirtied",
+     "ios_dirtied"],
+"filestore":
+    ["journal_latency",
+    "journal_queue_max_ops",
+    "commitcycle_interval"]
+}
