@@ -6,10 +6,6 @@ import json
 import texttable as TT
 import perfcollect as PC
 
-# set here counters, which you need, in format group - list of counters
-perf_counters = {'WBThrottle': ['bytes_dirtied', 'ios_dirtied'],
-                 'filestore': ['journal_latency', 'journal_queue_max_ops']}
-
 
 # function to read config file
 def get_perfcounters_list_from_config(config):
@@ -30,7 +26,7 @@ def get_perfcounters_list_from_sysargs(args):
 def main():
     # parse command line
     ag = argparse.ArgumentParser(description="Collect perf counters from ceph nodes", 
-                                    epilog="Note, if you don't use both -c and -g options, counter names from the code will be used.")
+                                    epilog="Note, if you don't use both -c and -g options, all counters will be collected.")
     ag.add_argument("--ip", "-i", type=str, help="Controller host")
     ag.add_argument("--user", "-u", type=str, help="User name for all hosts")
     ag.add_argument("--config", "-g", type=str, 
@@ -48,22 +44,33 @@ def main():
     if (args.config is not None and args.collection is not None):
         print ("You cannot add counters from config and command line together")
         return 1
+    if (args.ip is None):
+        print ("Warning: you try to connect to default host (local)!\n")
 
     # prepare info about needed counters
     if (args.config is not None):
         perf_counters = get_perfcounters_list_from_config(args.config)
-    if (args.collection is not None):
+    elif (args.collection is not None):
         perf_counters = get_perfcounters_list_from_sysargs(args.collection)
+    else:
+        perf_counters = None
 
     # send parameters to external function
-    if (args.ip is None and args.user is None):
-        perf_list = PC.get_perf_dump_in_map()
-    elif (args.ip is not None and args.user is None):
-        perf_list = PC.get_perf_dump_in_map(host=args.ip)
-    elif (args.ip is None and args.user is not None):
-        perf_list = PC.get_perf_dump_in_map(user=args.user)
-    else:
-        perf_list = PC.get_perf_dump_in_map(host=args.ip, user=args.user)
+    params = {}
+    if (args.ip is not None):
+        params["host"] = args.ip
+    if (args.user is not None):
+        params["user"] = args.user
+    if (perf_counters is None):
+        params["wantschema"] = True
+        params["withouttype"] = True
+
+    perf_list = PC.get_perf_dump_in_map(**params)
+
+    # if all counters required, schema is in result too
+    if (perf_counters is None):
+        perf_counters = perf_list[0]
+        perf_list = perf_list[1]
 
     # prepare data for table output
     tab = TT.Texttable()
