@@ -66,7 +66,7 @@ def get_perf_dump_in_map(host=cnt_host, user=default_user, nomess=False, wantsch
         disconnect_all()
 
         k = 0
-        perf_list_named = {"osd"+osd_lists[k]: e[1] for k, e in enumerate(perf_list.items())} # change names in map for to find them by osds
+        perf_list_named = {"osd"+osd_lists[k].strip('\r'): e[1] for k, e in enumerate(perf_list.items())} # change names in map for to find them by osds
         # for key, pd in perf_list.items():
         #    perf_list_named["osd"+osd_lists[k]] = pd
         #    k+=1

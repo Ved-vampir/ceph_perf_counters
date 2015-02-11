@@ -12,6 +12,7 @@ You need to have ssh access for all ceph nodes.
 You can do it manually like this:  
  1. Put your .pub file (with public key) on Fuel node (like this, for example scp .ssh/id_rsa.pub root@\<fuel_node\>:/root/myrsa.pub)  
  2. Next send it from Fuel node by ssh-copy-id on all nodes from 'fuel --env-id \<env_id\> node list' (or only to controller and ceph nodes)  
+
 Or you can use script ./get_access.sh \<fuel_host\> \<environment_name\>. This script uses algorithm, described above. You need to know root password of fuel host and to have local rsa key, named id_rsa. Note, that it is only for convenience, it can be not very safe or have any other problems. Read script for additional information.
 
 I'm sure, there are better ways :)
@@ -36,7 +37,7 @@ Optional parameters:
 
 ###get_perfs.py
 
-Program, which provides table output for optional counters. Counters can be specified in json file, in command line arguments or all will be used by default.
+Program, which provides table or json output for optional counters. Counters can be specified in json file, in command line arguments or all will be used by default.
 
 Usage:
 
@@ -49,6 +50,8 @@ Usage:
       -h, --help            show this help message and exit
       --ip IP, -i IP        Controller host
       --user USER, -u USER  User name for all hosts
+      --json JSON, -j JSON  Output to file in json format, you need specify file name
+
       --config CONFIG, -g CONFIG
                             Use it, if you want upload needed counter names from
                             file (json format, .counterslist as example)
@@ -58,7 +61,7 @@ Usage:
 
     Note, if you don't use one of -c or -g options, all counters from perf schema will be used.
 
-    You will get output like this:
+    You will get table output like this:
 
             Collecting.....
             +-----------------------+-------------------+-------------------+

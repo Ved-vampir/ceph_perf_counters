@@ -23,12 +23,60 @@ def get_perfcounters_list_from_sysargs(args):
     return pc
 
 
+# function for table output of counters values
+def output_to_table(perf_counters, perf_list):
+    # prepare data for table output
+    tab = TT.Texttable()
+    tab.set_deco(tab.HEADER | tab.VLINES | tab.BORDER | tab.HLINES)
+
+    header = ['']
+    header.extend(perf_list.keys())
+    tab.add_row(header)
+    tab.header = header
+
+    for group_name, counters in perf_counters.items():
+        row = [''] * (len(perf_list.keys()) + 1)
+        row[0] = group_name
+        tab.add_row(row)
+        for counter in counters:
+            row = []
+            row.append(counter)
+            for key, value in perf_list.items():
+                if type(value[group_name][counter]) != type(dict()):
+                    row.append(value[group_name][counter])
+                else:
+                    s = ""
+                    for key1, value1 in value[group_name][counter].items():
+                        s = s + key1 + " = " + str(value1) + "\n"
+                    row.append(s)
+            tab.add_row(row)
+
+    print (tab.draw())
+
+
+# save counters in json file
+def output_to_json (perf_counters, perf_list, filename):
+    # select info
+    save = dict()
+    for node, value in perf_list.items():
+        save[node] = dict()
+        for group_name, counters in perf_counters.items():
+            save[node][group_name] = dict()
+            for counter in counters:
+                if (group_name in value and counter in value[group_name]):
+                    save[node][group_name][counter] = value[group_name][counter]
+    # save info
+    with open(filename, 'w') as f:
+        json.dump(save, f, indent=4)
+
+
 def main():
     # parse command line
     ag = argparse.ArgumentParser(description="Collect perf counters from ceph nodes", 
                                     epilog="Note, if you don't use both -c and -g options, all counters will be collected.")
     ag.add_argument("--ip", "-i", type=str, help="Controller host")
     ag.add_argument("--user", "-u", type=str, help="User name for all hosts")
+    ag.add_argument("--json", "-j", type=str, help="Output to file in json format, you need specify file name")
     ag.add_argument("--config", "-g", type=str, 
                         help="Use it, if you want upload needed counter names from file (json format, .counterslist as example)")
     ag.add_argument("--collection", "-c", type=str, action="append", nargs='+', 
@@ -72,33 +120,10 @@ def main():
         perf_counters = perf_list[0]
         perf_list = perf_list[1]
 
-    # prepare data for table output
-    tab = TT.Texttable()
-    tab.set_deco(tab.HEADER | tab.VLINES | tab.BORDER | tab.HLINES)
-
-    header = ['']
-    header.extend(perf_list.keys())
-    tab.add_row(header)
-    tab.header = header
-
-    for group_name, counters in perf_counters.items():
-        row = [''] * (len(perf_list.keys()) + 1)
-        row[0] = group_name
-        tab.add_row(row)
-        for counter in counters:
-            row = []
-            row.append(counter)
-            for key, value in perf_list.items():
-                if type(value[group_name][counter]) != type(dict()):
-                    row.append(value[group_name][counter])
-                else:
-                    s = ""
-                    for key1, value1 in value[group_name][counter].items():
-                        s = s + key1 + " = " + str(value1) + "\n"
-                    row.append(s)
-            tab.add_row(row)
-
-    print (tab.draw())
+    if (args.json is None):
+        output_to_table(perf_counters, perf_list)
+    else:
+        output_to_json(perf_counters, perf_list, args.json)
 
 
 if __name__ == '__main__':

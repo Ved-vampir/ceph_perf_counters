@@ -57,16 +57,6 @@ class CountersTimer(object):
 
 
 
-
-def main(): # just for test
-    perf_counters = {'WBThrottle': ['bytes_dirtied', 'ios_dirtied'],
-                    'filestore': ['journal_latency', 'journal_queue_max_ops']}
-    ct = CountersTimer(host="172.16.54.71",perf_counters=perf_counters)
-    with ct as result:
-        pass#time.sleep(10)
-    print ("Res: ", result.perf_difference)
-
-
 if __name__ == '__main__':
     main()
 
