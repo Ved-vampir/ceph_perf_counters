@@ -4,6 +4,7 @@ import time
 from contextlib import contextmanager
 import perfcollect as PC
 
+
 class CountersTimer(object):
 
     # perf_counters 
@@ -21,7 +22,7 @@ class CountersTimer(object):
         # getting initial counters values
         if (self.perf_counters is not None): 
             self.perf_values0 = PC.get_perf_dump_in_map(host=self.host, user=self.user, nomess=True)
-        else: # if there are no info about coounters - ask from host
+        else:  # if there are no info about coounters - ask from host
             res = PC.get_perf_dump_in_map(host=self.host, user=self.user, nomess=True, wantschema=True, withouttype=True)
             self.perf_values0 = res[1]
             self.perf_counters = res[0]
@@ -37,7 +38,7 @@ class CountersTimer(object):
         for grname, cname in self.perf_counters.items():
             
             for c in cname:
-                counter = grname+"."+c                      #key = <group name>.<counter name>
+                counter = grname+"."+c                      # key = <group name>.<counter name>
                 self.perf_difference[counter] = dict()
 
                 for node, value in self.perf_values1.items():
@@ -54,9 +55,4 @@ class CountersTimer(object):
                             self.perf_difference[counter][node] = dict()
                             for k, v in dif1.items():
                                 self.perf_difference[counter][node][k] = v - dif0[k]
-
-
-
-if __name__ == '__main__':
-    main()
 

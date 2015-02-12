@@ -39,17 +39,18 @@ def output_to_table(perf_counters, perf_list):
         row[0] = group_name
         tab.add_row(row)
         for counter in counters:
-            row = []
-            row.append(counter)
-            for key, value in perf_list.items():
-                if type(value[group_name][counter]) != type(dict()):
-                    row.append(value[group_name][counter])
-                else:
-                    s = ""
-                    for key1, value1 in value[group_name][counter].items():
-                        s = s + key1 + " = " + str(value1) + "\n"
-                    row.append(s)
-            tab.add_row(row)
+                row = []
+                row.append(counter)
+                for key, value in perf_list.items():
+                    if (group_name in value and counter in value[group_name]):
+                        if type(value[group_name][counter]) != type(dict()):
+                            row.append(value[group_name][counter])
+                        else:
+                            s = ""
+                            for key1, value1 in value[group_name][counter].items():
+                                s = s + key1 + " = " + str(value1) + "\n"
+                            row.append(s)
+                tab.add_row(row)
 
     print (tab.draw())
 
@@ -61,10 +62,11 @@ def output_to_json (perf_counters, perf_list, filename):
     for node, value in perf_list.items():
         save[node] = dict()
         for group_name, counters in perf_counters.items():
-            save[node][group_name] = dict()
-            for counter in counters:
-                if (group_name in value and counter in value[group_name]):
-                    save[node][group_name][counter] = value[group_name][counter]
+            if (group_name in value):
+                save[node][group_name] = dict()
+                for counter in counters:
+                    if (counter in value[group_name]):
+                        save[node][group_name][counter] = value[group_name][counter]
     # save info
     with open(filename, 'w') as f:
         json.dump(save, f, indent=4)
